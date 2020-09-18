@@ -137,6 +137,10 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
  */
 fun longestCommonSubstring(first: String, second: String): String {
 
+    if (first == "" || second == "") {
+        return ""
+    }
+
     // будет работать без этого, но это гарантирует наименьшее потребление памяти
     // трудоёмкость не изменится ?
     if (second.length > first.length) {
@@ -167,7 +171,7 @@ fun longestCommonSubstring(first: String, second: String): String {
 
         // т.к. у нас данные не хранятся в матрице, то каждую итерацию надо проверять найдено ли лучшее решение
         //0(1)
-        val maxSubstring = matchList.maxOrNull()!!
+        val maxSubstring = matchList.maxOrNull() ?: 0
         if (maxSubstring > substring.first) {
             substring = maxSubstring to matchList.indexOf(maxSubstring)
         }
