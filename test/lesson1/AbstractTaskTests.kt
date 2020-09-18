@@ -1,10 +1,12 @@
 package lesson1
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.assertThrows
 import util.PerfResult
 import util.estimate
 import java.io.BufferedWriter
 import java.io.File
+import java.lang.Exception
 import java.util.*
 import kotlin.math.abs
 import kotlin.system.measureNanoTime
@@ -12,6 +14,7 @@ import kotlin.system.measureNanoTime
 abstract class AbstractTaskTests : AbstractFileTests() {
 
     protected fun sortTimes(sortTimes: (String, String) -> Unit) {
+        // обычный тест
         try {
             sortTimes("input/time_in1.txt", "temp.txt")
             assertFileContent(
@@ -28,6 +31,8 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+
+        // краевой случай
         try {
             sortTimes("input/time_in2.txt", "temp.txt")
             assertFileContent(
@@ -39,15 +44,66 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+
+        // корренктность введённых данных
+        try {
+            assertThrows<IllegalArgumentException> { sortTimes("input/time_am.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+        }
+
+        try {
+            File("tmp.txt").writeText(
+                """
+                     22:40:31 AM
+                """.trimIndent()
+            )
+
+            assertThrows<IllegalArgumentException> { sortTimes("tmp.txt", "temp.txt") }
+        } finally {
+            File("tmp.txt").delete()
+            File("temp.txt").delete()
+        }
+
+        try {
+            File("tmp.txt").writeText(
+                """
+                     01:60:60 AM
+                """.trimIndent()
+            )
+
+            assertThrows<IllegalArgumentException> { sortTimes("tmp.txt", "temp.txt") }
+        } finally {
+            File("tmp.txt").delete()
+            File("temp.txt").delete()
+        }
+
+
+        // тест на производительность
         try {
             sortTimes("input/time_in3.txt", "temp.txt")
             assertFileContent("temp.txt", File("input/time_out3.txt").readLines())
         } finally {
             File("temp.txt").delete()
         }
+
+        // тест с пустым файлом
+        try {
+            File("empty.txt").writeText("")
+            sortTimes("empty.txt", "temp.txt")
+            assertFileContent(
+                "temp.txt",
+                ""
+            )
+        } finally {
+            File("empty.txt").delete()
+            File("temp.txt").delete()
+        }
+
     }
 
     protected fun sortAddresses(sortAddresses: (String, String) -> Unit) {
+        // обычный тест
         try {
             sortAddresses("input/addr_in1.txt", "temp.txt")
             assertFileContent(
@@ -61,18 +117,65 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+
+        // обычный тест
         try {
             sortAddresses("input/addr_in2.txt", "temp.txt")
             assertFileContent("temp.txt", File("input/addr_out2.txt").readLines())
         } finally {
             File("temp.txt").delete()
         }
+
+        // тест на исключения
+        try {
+            File("tmp.txt").writeText(
+                """
+                    Железнодорожная Три - Петров Иван
+                    Железнодорожная 7 - Иванов Алексей, Иванов Михаил
+                    Садовая 5 - Сидоров Петр, Сидорова Мария
+                """.trimIndent()
+            )
+            assertThrows<IllegalArgumentException> { sortAddresses("tmp.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+            File("tmp.txt").delete()
+        }
+        try {
+            File("tmp.txt").writeText(
+                """
+                    Железнодорожная 3 - Петров
+                    Железнодорожная 7 - Иванов Алексей, Иванов Михаил
+                    Садовая 5 - Сидоров Петр, Сидорова Мария
+                """.trimIndent()
+            )
+            assertThrows<IllegalArgumentException> { sortAddresses("tmp.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+            File("tmp.txt").delete()
+        }
+
+        // тест на производительность
         try {
             sortAddresses("input/addr_in3.txt", "temp.txt")
             assertFileContent("temp.txt", File("input/addr_out3.txt").readLines())
         } finally {
             File("temp.txt").delete()
         }
+
+        // тест с пустым файлом
+        try {
+            File("empty.txt").writeText("")
+            sortAddresses("empty.txt", "temp.txt")
+            assertFileContent(
+                "temp.txt",
+                ""
+            )
+        } finally {
+            File("empty.txt").delete()
+            File("temp.txt").delete()
+        }
+
+
     }
 
     private fun generateTemperatures(size: Int): PerfResult<Unit> {
@@ -101,6 +204,7 @@ abstract class AbstractTaskTests : AbstractFileTests() {
     }
 
     protected fun sortTemperatures(sortTemperatures: (String, String) -> Unit) {
+        // Обычный тест
         try {
             sortTemperatures("input/temp_in1.txt", "temp.txt")
             assertFileContent(
@@ -118,7 +222,7 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
-
+        // тест на производительность
         fun testGeneratedTemperatures(size: Int): PerfResult<Unit> {
             try {
                 val res = generateTemperatures(size)
@@ -137,6 +241,42 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         }
 
         println("sortTemperatures: $perf")
+        //тест с исключением
+        try {
+            File("temp_ex.txt").writeText(
+                """
+                    -9998.4
+                    -12.6
+                    -12.6
+                    11.0
+                    2774.7
+                    99.5
+                    121.3
+                """.trimIndent()
+            )
+
+            assertThrows<IllegalArgumentException> { sortTemperatures("temp_ex.txt", "temp.txt") }
+
+        } finally {
+            File("temp.txt").delete()
+            File("temp_ex.txt").delete()
+        }
+
+
+        // тест с пустым файлом
+        try {
+            File("empty.txt").writeText("")
+            sortAddresses("empty.txt", "temp.txt")
+            assertFileContent(
+                "temp.txt",
+                ""
+            )
+        } finally {
+            File("empty.txt").delete()
+            File("temp.txt").delete()
+        }
+
+
     }
 
     private fun generateSequence(totalSize: Int, answerSize: Int): PerfResult<Unit> {
@@ -296,6 +436,20 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         }
 
         println("sortSequence: $perf")
+
+        // тест с пустым файлом
+        try {
+            File("empty.txt").writeText("")
+            sortSequence("empty.txt", "temp.txt")
+            assertFileContent(
+                "temp.txt",
+                ""
+            )
+        } finally {
+            File("empty.txt").delete()
+            File("temp.txt").delete()
+        }
+
     }
 
     private fun generateArrays(

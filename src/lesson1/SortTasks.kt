@@ -2,6 +2,8 @@
 
 package lesson1
 
+import java.io.File
+
 /**
  * Сортировка времён
  *
@@ -32,8 +34,53 @@ package lesson1
  *
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
+
+// Тут у констроктора и функций трудоёмкость O(1)
+private class TimeWithComparation(private val input: String) : Comparable<TimeWithComparation> {
+
+    private val seconds: Int
+
+    init {
+        val regex =
+            (Regex("(\\d\\d):(\\d\\d):(\\d\\d) (AM|PM)").find(input)
+                ?: throw IllegalArgumentException("Неверный формат входных данных")).groupValues
+        var hours = regex[1].toInt()
+        val minutes = regex[2].toInt()
+        val seconds = regex[3].toInt()
+        val period = regex[4]
+
+        // проверка на AM PM не нужна, этим занимается REGEX
+        require(hours in 1..12 && minutes in 0..59 && seconds in 0..59) { "Неверный формат времени" }
+
+        hours %= 12
+        if (period == "PM") {
+            hours += 12
+        }
+        this.seconds = ((hours * 60) + minutes) * 60 + seconds
+    }
+
+
+    override fun compareTo(other: TimeWithComparation): Int = this.seconds - other.seconds
+
+    override fun toString(): String = input
+
+}
+
+/*
+Пусть N - количество строк во входном файле
+Трудоёмкость алгоритма - O(NlogN)
+Затраты помяти - O(N) ( O(N) на хранение строк + O(N) для списка сливаний )
+*/
 fun sortTimes(inputName: String, outputName: String) {
-    TODO()
+    val times = File(inputName)
+        // трудоёмкость - O(N)
+        .readLines()
+        // трудоёмкость - O(N)
+        .map { TimeWithComparation(it) }
+        // трудоёмкость - O(NlogN)
+        .sorted()
+    // трудоёмкость - O(N)
+    File(outputName).writeText(times.joinToString("\n"))
 }
 
 /**
@@ -62,8 +109,44 @@ fun sortTimes(inputName: String, outputName: String) {
  *
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
+
+/*
+Пусть N - количество строк во входном файле == количество людей
+Пусть M - количество адресов по которым живут люди
+N >= M - всегда
+Трудоёмкость алгоритма - O(M)*0( (N/M)*log(N/M) ) ???
+Затраты помяти - O(N) ???
+*/
 fun sortAddresses(inputName: String, outputName: String) {
-    TODO()
+    val result = File(inputName).
+        //0(N)
+    readLines().
+        //0(N)
+        // делаем проверку на формат строки и делаем список MatchResult
+    map {
+        ("(\\S+ \\S+) - (\\S+ \\d+)").toRegex().find(it) ?: throw IllegalArgumentException()
+    }
+        //0(N) - думаю котлин просто проходит по листу и собирает всё в map
+        // переходим к ассоциативному массиву, где к каждому адресу относится список людей живущих по нему
+        .groupBy({ it.groupValues[2] }, { it.groupValues[1] })
+        //0(M)
+        // соритируем каждый список **по алфавиту (вначале по фамилии, потом по имени)**
+        // тут ничего особенного поэтому стандратный compareTo стринга подходит
+        .mapValues {
+            // 0( (N/M)*log(N/M) ) - возьмём среднее количество людей на один адрес
+            it.value.sorted()
+        }
+        //0(M*logM)
+        // соритируем каждый список **упорядоченными по названию улицы (по алфавиту) и номеру дома (по возрастанию)**
+        // тут  стандратный compareTo стринга НЕ подходит
+        .toSortedMap(
+            compareBy({ it.split(" ").first() }, { it.split(" ").last().toInt() })
+        )
+        //0(M)
+        .map { "${it.key} - ${it.value.joinToString(", ")}" }
+
+    File(outputName).writeText(result.joinToString("\n"))
+
 }
 
 /**
@@ -96,8 +179,44 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 99.5
  * 121.3
  */
+// исключения?
+
+/*
+Пусть N - количество строк во входном файле
+Трудоёмкость алгоритма - O(N)
+Я считаю что именно такая трудоёмкость должна быть в этой задаче, из-за того что по условию :
+"Количество строк в файле может достигать ста миллионов"
+Т.к. количество температур такое больше, а диапазон температур всего 7730 это означает что в сортировке
+подсчётом которая имеет трудоёмкость O(N+K), где К - диапазон значений, К намного меньше N, и его можно опустить
+получив выполнение за линейное время
+
+Затраты помяти - O(N)
+O(N) - хранение температур
+для конвертации O(N)
+O(N) - для сортировки
+ */
 fun sortTemperatures(inputName: String, outputName: String) {
-    TODO()
+    val temperatures = File(inputName)
+        //O(N)
+        .readLines()
+        // O(N)
+        .map {
+            // O(1)
+            it.replace(".", "").toInt() + 2730 // выкинет исключение если формат не верен
+        }
+        // O(N)
+        .toIntArray()
+
+    //O(N) - в условии не написано про исключение, но лучше перестраховаться
+    temperatures.forEach { require(it in 0..7730) }
+
+    File(outputName).writeText(
+        //O(N)
+        countingSort(temperatures, 7730)
+            //O(N)
+            .map { (it - 2730).toFloat() / 10 }
+            //O(N)
+            .joinToString("\n"))
 }
 
 /**
@@ -129,8 +248,41 @@ fun sortTemperatures(inputName: String, outputName: String) {
  * 2
  * 2
  */
+
+/*
+Пусть N - количество строк во входном файле
+Трудоёмкость алгоритма - O(N)
+Затраты помяти - O(N)
+*/
+
 fun sortSequence(inputName: String, outputName: String) {
-    TODO()
+    val sequence = File(inputName)
+        //O(N)
+        .readLines()
+        //O(N)
+        .map { it.toInt() }
+    val intToNumber = sequence
+        //O(N)
+        .groupingBy { it }
+        //O(N)
+        .eachCount()
+        //O(N)
+        .toList()
+    val maxNumberOfRepeat = (intToNumber
+        //O(N)
+        .maxByOrNull { it.second } ?: 0 to 0)
+        .second
+    val minInt = (intToNumber
+        //O(N)
+        .filter { it.second == maxNumberOfRepeat }
+        //O(N)
+        .minByOrNull { it.first } ?: 0 to 0).first
+    val result = sequence
+        //O(N)
+        .filter { it != minInt } +
+            List(maxNumberOfRepeat) { minInt }
+    //O(N)
+    File(outputName).writeText(result.joinToString("\n"))
 }
 
 /**
@@ -147,7 +299,22 @@ fun sortSequence(inputName: String, outputName: String) {
  *
  * Результат: second = [1 3 4 9 9 13 15 20 23 28]
  */
+/*
+Пусть N - длина второго массива, тогда:
+Трудоёмкость алгоритма - O(N)
+Затраты помяти - O(N)
+*/
 fun <T : Comparable<T>> mergeArrays(first: Array<T>, second: Array<T?>) {
-    TODO()
+    var firstIndex = 0
+    var secondIndex = first.size
+    // O(N)
+    for (i in second.indices) {
+        if (secondIndex >= second.size || firstIndex < first.size && first[firstIndex] <= second[secondIndex]!!) {
+            second[i] = first[firstIndex++]
+        } else {
+            second[i] = second[secondIndex++]
+        }
+    }
+
 }
 
