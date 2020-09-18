@@ -126,11 +126,56 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
  * вернуть ту из них, которая встречается раньше в строке first.
  */
 /*
-
+Пусть N, M - длины строк, N >= M
+Трудоёмкость - O(N*M)
+Затраты памяти - O(M)
+Как основа использовался классический алгоритм поиска общей подстроки только
+для меньших затрат памяти вместо матрицы MxN возьмём только одну строчку
+которая бы "перемещалась" в такой матрице,
+и дополнительную строчку для запоминания прошлого состоянии строки
+В итоге получаем такой же алгоритм только с меньшими затратами памяти
  */
 fun longestCommonSubstring(first: String, second: String): String {
-    TODO()
+
+    // будет работать без этого, но это гарантирует наименьшее потребление памяти
+    // трудоёмкость не изменится ?
+    if (second.length > first.length) {
+        return longestCommonSubstring(second, first)
+    }
+
+    val matchList = MutableList(second.length) { 0 }
+    var substring = 0 to 0 // 1 - размер, 2 - до куда
+
+    //0(N)
+    for (i in first) {
+        // копируем данные из *прошлой* строчки
+        val tempList = mutableListOf<Int>()
+        tempList.addAll(matchList)
+
+        //O(M)
+        for (j in second.indices) {
+            if (i == second[j]) {
+                if (j > 0) {
+                    matchList[j] = tempList[j - 1] + 1
+                } else {
+                    matchList[j] = 1
+                }
+            } else {
+                matchList[j] = 0
+            }
+        }
+
+        // т.к. у нас данные не хранятся в матрице, то каждую итерацию надо проверять найдено ли лучшее решение
+        //0(1)
+        val maxSubstring = matchList.maxOrNull()!!
+        if (maxSubstring > substring.first) {
+            substring = maxSubstring to matchList.indexOf(maxSubstring)
+        }
+    }
+
+    return second.substring(substring.second - substring.first + 1, substring.second + 1)
 }
+
 
 /**
  * Число простых чисел в интервале
