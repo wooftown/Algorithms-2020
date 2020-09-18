@@ -59,7 +59,6 @@ private class TimeWithComparation(private val input: String) : Comparable<TimeWi
         this.seconds = ((hours * 60) + minutes) * 60 + seconds
     }
 
-
     override fun compareTo(other: TimeWithComparation): Int = this.seconds - other.seconds
 
     override fun toString(): String = input
@@ -72,15 +71,16 @@ private class TimeWithComparation(private val input: String) : Comparable<TimeWi
 Затраты помяти - O(N) ( O(N) на хранение строк + O(N) для списка сливаний )
 */
 fun sortTimes(inputName: String, outputName: String) {
-    val times = File(inputName)
+    val timesList = File(inputName)
         // трудоёмкость - O(N)
         .readLines()
         // трудоёмкость - O(N)
         .map { TimeWithComparation(it) }
         // трудоёмкость - O(NlogN)
+        // класс TimeWithComparation is comparable, поэтому используем обычную сортировку списка
         .sorted()
     // трудоёмкость - O(N)
-    File(outputName).writeText(times.joinToString("\n"))
+    File(outputName).writeText(timesList.joinToString("\n"))
 }
 
 /**
@@ -202,6 +202,7 @@ fun sortTemperatures(inputName: String, outputName: String) {
         // O(N)
         .map {
             // O(1)
+            // переводим данные в инт и добавляем 2730, чтобы не было отрицательных значений
             it.replace(".", "").toInt() + 2730 // выкинет исключение если формат не верен
         }
         // O(N)
@@ -214,6 +215,7 @@ fun sortTemperatures(inputName: String, outputName: String) {
         //O(N)
         countingSort(temperatures, 7730)
             //O(N)
+            // восстанавливаем числа убавление 2730 и делением на 10
             .map { (it - 2730).toFloat() / 10 }
             //O(N)
             .joinToString("\n"))
@@ -256,11 +258,15 @@ fun sortTemperatures(inputName: String, outputName: String) {
 */
 
 fun sortSequence(inputName: String, outputName: String) {
+    // последовательность чисел
     val sequence = File(inputName)
         //O(N)
         .readLines()
         //O(N)
         .map { it.toInt() }
+
+    // с помощью ассоциативного массива переходим к списку пар,
+    // где первый элемент пары - число, второй - число его вхождение
     val intToNumber = sequence
         //O(N)
         .groupingBy { it }
@@ -268,15 +274,20 @@ fun sortSequence(inputName: String, outputName: String) {
         .eachCount()
         //O(N)
         .toList()
+
+    // находим максимальное количество вхождений
     val maxNumberOfRepeat = (intToNumber
         //O(N)
         .maxByOrNull { it.second } ?: 0 to 0)
         .second
+
+    // по числу вхождений находим минимальное по значению число с таким числом вхождений
     val minInt = (intToNumber
         //O(N)
         .filter { it.second == maxNumberOfRepeat }
         //O(N)
         .minByOrNull { it.first } ?: 0 to 0).first
+
     val result = sequence
         //O(N)
         .filter { it != minInt } +
