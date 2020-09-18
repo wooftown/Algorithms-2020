@@ -170,8 +170,14 @@ fun longestCommonSubstring(first: String, second: String): String {
         }
 
         // т.к. у нас данные не хранятся в матрице, то каждую итерацию надо проверять найдено ли лучшее решение
-        //0(1)
-        val maxSubstring = matchList.maxOrNull() ?: 0
+        //0(N)
+        // matchList.maxOrNull() ?: 0
+        var maxSubstring = 0
+        for (int in matchList) {
+            if (int > maxSubstring) {
+                maxSubstring = int
+            }
+        }
         if (maxSubstring > substring.first) {
             substring = maxSubstring to matchList.indexOf(maxSubstring)
         }
