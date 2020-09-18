@@ -2,6 +2,8 @@
 
 package lesson2
 
+import java.io.File
+
 /**
  * Получение наибольшей прибыли (она же -- поиск максимального подмассива)
  * Простая
@@ -26,8 +28,37 @@ package lesson2
  *
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
+/*
+Пусть N - кол-во входных строк
+Трудоёмкость алгоритма - O(N)
+Затраты памяти - O(N) - хранение списка
+ */
 fun optimizeBuyAndSell(inputName: String): Pair<Int, Int> {
-    TODO()
+    val list = mutableListOf<Int>()
+    File(inputName)
+        //O(N)
+        .readLines()
+        //O(N)
+        .forEach {
+            require(Regex("\\d+").matches(it) && it.toInt() > 0)
+            list.add(it.toInt())
+        }
+
+    fun Pair<Int, Int>.profit(): Int = list[second] - list[first]
+
+    var bestProfit = 0 to 0
+    var cheaperIndex = 0
+
+    //O(N)
+    for (i in 1 until list.size) {
+        if (list[i] < list[cheaperIndex]) {
+            cheaperIndex = i
+        }
+        if (Pair(cheaperIndex, i).profit() > bestProfit.profit()) {
+            bestProfit = cheaperIndex to i
+        }
+    }
+    return bestProfit.first + 1 to bestProfit.second + 1
 }
 
 /**
@@ -108,6 +139,39 @@ fun longestCommonSubstring(first: String, second: String): String {
  * Справка: простым считается число, которое делится нацело только на 1 и на себя.
  * Единица простым числом не считается.
  */
+/*
+В этой задаче я использовал Решето Эратосфена - https://ru.wikipedia.org/wiki/Решето_Эратосфена
+Пусть N = limit
+Трудоёмкость алгоритма - O(N*log(logN))
+Затраты памяти - O(N)
+ */
 fun calcPrimesNumber(limit: Int): Int {
-    TODO()
+    if (limit <= 1) {
+        return 0
+    }
+
+    val numbers = BooleanArray(limit + 1) { true }
+    var next = 2
+    //O(N)
+    while (next * next <= limit) {
+        if (numbers[next]) {
+            //(N/next) - ?
+            // первое зачеркивание требует N/2 действий , второе N/3 и т.д. -> для вычеркиваний трудоёмкость log(logN)
+            for (j in next * next..limit step next) {
+                numbers[j] = false
+            }
+        }
+        next++
+    }
+
+    var result = 0
+
+    // O(N)
+    for (i in 2 until numbers.size) {
+        if (numbers[i]) {
+            result++
+        }
+    }
+
+    return result
 }
