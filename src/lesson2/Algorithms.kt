@@ -128,14 +128,52 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
 /*
 Пусть N, M - длины строк, N >= M
 Трудоёмкость - O(N*M)
-Затраты памяти - O(M)
-Как основа использовался классический алгоритм поиска общей подстроки только
-для меньших затрат памяти вместо матрицы MxN возьмём только одну строчку
-которая бы "перемещалась" в такой матрице,
-и дополнительную строчку для запоминания прошлого состоянии строки
-В итоге получаем такой же алгоритм только с меньшими затратами памяти
+Затраты памяти - O(1)
+Вместо массивов, которые содержат большое количество нулей возьмём Map который эти нули хранить не может
+и не будет забивать память, получим выйгрыш в быстродействии( меньшее время обхода по map)
  */
 fun longestCommonSubstring(first: String, second: String): String {
+
+    if (first == "" || second == "") {
+        return ""
+    }
+
+    // чтобы меньше забивать Map
+    if (second.length > first.length) {
+        return longestCommonSubstring(second, first)
+    }
+
+    val matchMap = mutableMapOf<Int, Int>()
+
+    // val matchList = MutableList(second.length) { 0 }
+    var solution = 0 to 0 // 1 - размер, 2 - до куда
+
+    //0(N)
+    for (i in first) {
+        // копируем данные из *прошлой* строчки
+        val tempMap = mutableMapOf<Int, Int>()
+        tempMap.putAll(matchMap)
+        //O(M)
+        for (j in second.indices) {
+            if (i == second[j]) {
+                matchMap[j] = tempMap.getOrDefault(j - 1, 0) + 1
+            } else {
+                matchMap.remove(j)
+            }
+        }
+        // т.к. у нас данные не хранятся постоянно, то каждую итерацию надо проверять найдено ли лучшее решение
+        //0(N)
+        val newSolution = matchMap.maxByOrNull { it.value }
+        if (newSolution != null) {
+            if (newSolution.value > solution.first) {
+                solution = newSolution.value to newSolution.key
+            }
+        }
+    }
+    return second.substring(solution.second - solution.first + 1, solution.second + 1)
+}
+
+fun longestCommonSubstringOld(first: String, second: String): String {
 
     if (first == "" || second == "") {
         return ""
@@ -144,7 +182,7 @@ fun longestCommonSubstring(first: String, second: String): String {
     // будет работать без этого, но это гарантирует наименьшее потребление памяти
     // трудоёмкость не изменится ?
     if (second.length > first.length) {
-        return longestCommonSubstring(second, first)
+        return longestCommonSubstringOld(second, first)
     }
 
     val matchList = MutableList(second.length) { 0 }
@@ -171,7 +209,7 @@ fun longestCommonSubstring(first: String, second: String): String {
 
         // т.к. у нас данные не хранятся в матрице, то каждую итерацию надо проверять найдено ли лучшее решение
         //0(N)
-        // matchList.maxOrNull() ?: 0
+        // matchList.maxOrNull() ?: 0 - не работает, пишем ручками
         var maxSubstring = 0
         for (int in matchList) {
             if (int > maxSubstring) {
@@ -181,11 +219,11 @@ fun longestCommonSubstring(first: String, second: String): String {
         if (maxSubstring > substring.first) {
             substring = maxSubstring to matchList.indexOf(maxSubstring)
         }
+
     }
 
     return second.substring(substring.second - substring.first + 1, substring.second + 1)
 }
-
 
 /**
  * Число простых чисел в интервале
