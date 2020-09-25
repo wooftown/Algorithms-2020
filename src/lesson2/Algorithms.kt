@@ -128,9 +128,8 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
 /*
 Пусть N, M - длины строк, N >= M
 Трудоёмкость - O(N*M)
-Затраты памяти - O(1)
-Вместо массивов, которые содержат большое количество нулей возьмём Map который эти нули хранить не может
-и не будет забивать память, получим выйгрыш в быстродействии( меньшее время обхода по map)
+Затраты памяти - O(?)
+Map будет заминать почти всегда меньше места чем Array, но пока не знаю какие будут затрты памяти
  */
 fun longestCommonSubstring(first: String, second: String): String {
 
@@ -138,16 +137,11 @@ fun longestCommonSubstring(first: String, second: String): String {
         return ""
     }
 
-    // чтобы меньше забивать Map
     if (second.length > first.length) {
         return longestCommonSubstring(second, first)
     }
-
     val matchMap = mutableMapOf<Int, Int>()
-
-    // val matchList = MutableList(second.length) { 0 }
     var solution = 0 to 0 // 1 - размер, 2 - до куда
-
     //0(N)
     for (i in first) {
         // копируем данные из *прошлой* строчки
@@ -173,6 +167,7 @@ fun longestCommonSubstring(first: String, second: String): String {
     return second.substring(solution.second - solution.first + 1, solution.second + 1)
 }
 
+@Suppress("UNUSED") // правильно ли писать такую аннотацию, чтобы инспектор не гундосил?
 fun longestCommonSubstringOld(first: String, second: String): String {
 
     if (first == "" || second == "") {
