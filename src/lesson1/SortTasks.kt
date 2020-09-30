@@ -114,8 +114,8 @@ fun sortTimes(inputName: String, outputName: String) {
 Пусть N - количество строк во входном файле == количество людей
 Пусть M - количество адресов по которым живут люди
 N >= M - всегда
-Трудоёмкость алгоритма - O(M)*0( (N/M)*log(N/M) ) ???
-Затраты помяти - O(N) ???
+Трудоёмкость алгоритма - 0(M*log(M))
+Затраты памяти - O(N)
 */
 fun sortAddresses(inputName: String, outputName: String) {
     val result = File(inputName).
