@@ -98,7 +98,7 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
             // O(M) , где М - количество элементов в линкед листе, но эта величина не постоянна в рамках данной задачи
             while (nodesToPrefixes.isNotEmpty()) {
 
-                val nodeAndString = nodesToPrefixes.removeLast()
+                val nodeAndString = nodesToPrefixes.removeLastOrNull()!! // removeLast котоед выплёвывает
                 //O(n) , где n - число ключей
                 for (child in nodeAndString.first.children) {
                     if (child.key == 0.toChar()) {
