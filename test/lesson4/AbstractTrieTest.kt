@@ -1,9 +1,12 @@
 package lesson4
 
+import ru.spbstu.kotlin.generate.util.nextString
 import java.util.*
 import kotlin.math.abs
-import ru.spbstu.kotlin.generate.util.nextString
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 abstract class AbstractTrieTest {
 
@@ -98,14 +101,25 @@ abstract class AbstractTrieTest {
             val trieIter = trieSet.iterator()
             println("Checking if the iterator traverses the entire set...")
             while (trieIter.hasNext()) {
-                controlSet.remove(trieIter.next())
+                //  println(controlSet)
+                val next = trieIter.next()
+                //  println(next)
+                controlSet.remove(next)
             }
             assertTrue(
                 controlSet.isEmpty(),
                 "TrieIterator doesn't traverse the entire set."
             )
-            assertFailsWith<IllegalStateException>("Something was supposedly returned after the elements ended") {
+            assertFailsWith<NoSuchElementException>("Something was supposedly returned after the elements ended") {
                 trieIter.next()
+            }
+
+            // слабое место в итераторе
+            val trie = KtTrie()
+            val set = setOf("tea", "te", "ten")
+            trie.addAll(set)
+            for (word in trie) {
+                assertTrue(set.contains(word))
             }
             println("All clear!")
         }
@@ -134,7 +148,7 @@ abstract class AbstractTrieTest {
             println("Control set: $controlSet")
             println("Removing element \"$toRemove\" from trie set through the iterator...")
             val iterator = trieSet.iterator()
-            assertFailsWith<IllegalStateException>("Something was supposedly deleted before the iteration started") {
+            assertFailsWith<NoSuchElementException>("Something was supposedly deleted before the iteration started") {
                 iterator.remove()
             }
             var counter = trieSet.size
@@ -143,7 +157,7 @@ abstract class AbstractTrieTest {
                 counter--
                 if (element == toRemove) {
                     iterator.remove()
-                    assertFailsWith<IllegalStateException>("Trie.remove() was successfully called twice in a row.") {
+                    assertFailsWith<NoSuchElementException>("Trie.remove() was successfully called twice in a row.") {
                         iterator.remove()
                     }
                 }

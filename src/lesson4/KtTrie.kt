@@ -21,6 +21,7 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
 
     private fun String.withZero() = this + 0.toChar()
 
+    // 0(n) ,где  n - длина слова
     private fun findNode(element: String): Node? {
         var current = root
         for (char in element) {
@@ -71,17 +72,67 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
     override fun iterator(): MutableIterator<String> = TrieIterator()
 
     inner class TrieIterator internal constructor() : MutableIterator<String> {
-        override fun hasNext(): Boolean {
-            TODO("Not yet implemented")
+
+        // Я ввел одновременно current и next из-за того, что для проверки hasNext() надо совершать теже операции что и в findNext(),
+        // в findNext() основной лист меняется и получалось как-то не очень,
+        // мы или вводим 2 переменных или в 2 функциях делаем одинаковые действия(
+        // что сказывается на производительность, например в цикле forEach)
+
+
+        private var current: String? = null
+        private var next: String? = null
+
+        private val nodesToPrefixes = mutableListOf<Pair<Node, String>>()
+
+        // Трудоёмкость - O(M*n)
+        init {
+            nodesToPrefixes.add(root to "")
+            next = findNext()
         }
 
+        // сложно оценить трудоёмкость данной функции из-за того что внешний цикл может иметь какое угодно число итераций
+        // Трудоёмкость - O(M*n), n - длина следующего слова ???
+        // Ресурсоёмкость - 0(1) ( если не считать изменение nodesToPrefixes )
+        private fun findNext(): String? {
+            var result: String? = null
+            // O(M) , где М - количество элементов в линкед листе, но эта величина не постоянна в рамках данной задачи
+            while (nodesToPrefixes.isNotEmpty()) {
+
+                val nodeAndString = nodesToPrefixes.removeLast()
+                //O(n) , где n - число ключей
+                for (child in nodeAndString.first.children) {
+                    if (child.key == 0.toChar()) {
+                        if (result == null) {
+                            result = nodeAndString.second // не выходим с return чтоб допрогнать всех потомков
+                        }
+                    } else {
+                        nodesToPrefixes.add(child.value to nodeAndString.second + child.key) // углубляемся в дерево
+                    }
+                }
+                if (result != null) {
+                    return result
+                }
+            }
+            return result
+        }
+
+        // O(1)
+        override fun hasNext(): Boolean = next != null
+
+        // O(M*N)
         override fun next(): String {
-            TODO("Not yet implemented")
+            current = next
+            next = findNext()
+            return current ?: throw NoSuchElementException()
         }
 
+        // O(N) , где n - длина слова
         override fun remove() {
-            TODO("Not yet implemented")
+            val string = current
+                ?: throw NoSuchElementException()
+            // во избежание удаления одного и того же элемента
+            this@KtTrie.remove(string)
+            current = null
         }
     }
-
 }
