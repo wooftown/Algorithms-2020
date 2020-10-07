@@ -28,15 +28,15 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      */
     override fun contains(element: T): Boolean {
         val startingIndex = element.startingIndex()
-        var index = startingIndex
-        var current = storage[index]
-        while (current.second) {
-            if (current.first == element) {
+        var currentIndex = startingIndex
+        var currentObject = storage[currentIndex]
+        while (currentObject.second) {
+            if (currentObject.first == element) {
                 return true
             }
-            index = (index + 1) % capacity
-            current = storage[index]
-            if (index == startingIndex) {
+            currentIndex = (currentIndex + 1) % capacity
+            currentObject = storage[currentIndex]
+            if (currentIndex == startingIndex) {
                 return false
             }
         }
@@ -55,17 +55,17 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      */
     override fun add(element: T): Boolean {
         val startingIndex = element.startingIndex()
-        var index = startingIndex
-        var current = storage[index]
-        while (current.first != null) {
-            if (current.first == element) {
+        var currentIndex = startingIndex
+        var currentObject = storage[currentIndex]
+        while (currentObject.first != null) {
+            if (currentObject.first == element) {
                 return false
             }
-            index = (index + 1) % capacity
-            check(index != startingIndex) { "Table is full" }
-            current = storage[index]
+            currentIndex = (currentIndex + 1) % capacity
+            check(currentIndex != startingIndex) { "Table is full" }
+            currentObject = storage[currentIndex]
         }
-        storage[index] = element to true
+        storage[currentIndex] = element to true
         size++
         return true
     }
@@ -87,20 +87,20 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      */
     override fun remove(element: T): Boolean {
         val startingIndex = element.startingIndex()
-        var index = startingIndex
-        var current = storage[index]
+        var currentIndex = startingIndex
+        var currentObject = storage[currentIndex]
         // 0(1) - в среднем , 0(N) - в худшем случае
-        while (current.second) {
-            if (element == current.first) {
-                storage[index] = null to true
+        while (currentObject.second) {
+            if (element == currentObject.first) {
+                storage[currentIndex] = null to true
                 size--
                 return true
             }
-            index = (index + 1) % capacity
-            if (index == startingIndex) {
+            currentIndex = (currentIndex + 1) % capacity
+            if (currentIndex == startingIndex) {
                 return false
             }
-            current = storage[index]
+            currentObject = storage[currentIndex]
         }
         return false
     }
@@ -124,7 +124,7 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
         // Тут так же как и в Trie, будем хранить текущий элемент и следующий
         // Трудоёмкости конструктора и next() связаны с поиском следующего элемента,
         // который может оказаться на startIndex - 1 $ capacity
-        private var index = -1
+        private var currentIndex = -1
         private var nextIndex = 0
 
         /*
@@ -150,14 +150,14 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
          */
         override fun next(): T {
             if (nextIndex >= capacity) throw NoSuchElementException()
-            index = nextIndex
+            currentIndex = nextIndex
             nextIndex++
-            @Suppress("UNCHECKED_CAST") val current = storage[index].first as T
+            @Suppress("UNCHECKED_CAST") val currentObject = storage[currentIndex].first as T
             // 0(1) - в среднем , 0(N) - в худшем случае
             while (nextIndex < capacity && storage[nextIndex].first == null) {
                 nextIndex++
             }
-            return current
+            return currentObject
         }
 
         /*
@@ -165,8 +165,8 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
            Затраты памяти - O(1)
         */
         override fun remove() {
-            check(index != -1 && storage[index].first != null)
-            storage[index] = null to true
+            check(currentIndex != -1 && storage[currentIndex].first != null)
+            storage[currentIndex] = null to true
             size--
         }
     }

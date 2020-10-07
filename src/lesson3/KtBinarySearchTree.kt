@@ -198,15 +198,15 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
 
     inner class BinarySearchTreeIterator internal constructor() : MutableIterator<T> {
 
-        private var current: Node<T>? = null
+        private var currentNode: Node<T>? = null
 
-        private val queue = ArrayDeque<Node<T>>()
+        private val nodesQueue = ArrayDeque<Node<T>>()
 
         // O(h/2), h - высота дерева с корнем node
         // будем идти по левым ветвям и добавлять правые при необходимости, тогда итератор будет работать как должен в SortedSet
         private fun addLeftBranchOf(node: Node<T>?) {
             if (node != null) {
-                queue.addLast(node)
+                nodesQueue.addLast(node)
                 addLeftBranchOf(node.left)
             }
         }
@@ -227,7 +227,7 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
          * Средняя
          */
         // O(1)
-        override fun hasNext(): Boolean = queue.isNotEmpty()
+        override fun hasNext(): Boolean = nodesQueue.isNotEmpty()
 
 
         /**
@@ -249,9 +249,9 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
          */
         override fun next(): T {
             if (!hasNext()) throw NoSuchElementException()
-            current = queue.removeLast()
-            addLeftBranchOf(current!!.right)
-            return current!!.value
+            currentNode = nodesQueue.removeLast()
+            addLeftBranchOf(currentNode!!.right)
+            return currentNode!!.value
         }
 
         /**
@@ -271,9 +271,9 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
         Затраты памяти - O(1)
         */
         override fun remove() {
-            check(current != null)
-            this@KtBinarySearchTree.remove(current!!.value)
-            current = null
+            check(currentNode != null)
+            this@KtBinarySearchTree.remove(currentNode!!.value)
+            currentNode = null
         }
 
     }

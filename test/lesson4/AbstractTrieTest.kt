@@ -114,7 +114,6 @@ abstract class AbstractTrieTest {
                 trieIter.next()
             }
 
-            // слабое место в итераторе
             val trie = KtTrie()
             val set = setOf("tea", "te", "ten")
             trie.addAll(set)

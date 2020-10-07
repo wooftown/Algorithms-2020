@@ -80,15 +80,15 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         // мы или вводим 2 переменных или в 2 функциях делаем одинаковые действия(
         // что сказывается на производительность, например в цикле forEach)
 
-        private var current: String? = null
-        private var next: String? = null
+        private var currentString: String? = null
+        private var nextString: String? = null
 
-        private val nodesToPrefixes = mutableListOf<Pair<Node, String>>()
+        private val nodesToStrings = mutableListOf<Pair<Node, String>>()
 
         // Трудоёмкость - O(M*n)
         init {
-            nodesToPrefixes.add(root to "")
-            next = findNext()
+            nodesToStrings.add(root to "")
+            nextString = findNext()
         }
 
         // сложно оценить трудоёмкость данной функции из-за того что внешний цикл может иметь какое угодно число итераций
@@ -97,18 +97,18 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         private fun findNext(): String? {
             var result: String? = null
             // O(M) , где М - количество элементов в линкед листе, но эта величина не постоянна в рамках данной задачи
-            while (nodesToPrefixes.isNotEmpty()) {
+            while (nodesToStrings.isNotEmpty()) {
 
                 // val nodeAndString = nodesToPrefixes.removeLastOrNull()!! // removeLast котоед выплёвывает
-                val nodeAndString = nodesToPrefixes.last()
-                nodesToPrefixes.remove(nodeAndString)
+                val currentPair = nodesToStrings.last()
+                nodesToStrings.remove(currentPair)
 
                 //O(n) , где n - число ключей
-                for ((key, value) in nodeAndString.first.children) {
+                for ((key, value) in currentPair.first.children) {
                     if (key == 0.toChar()) {
-                        result = nodeAndString.second // не выходим с return чтоб допрогнать всех потомков
+                        result = currentPair.second // не выходим с return чтоб допрогнать всех потомков
                     } else {
-                        nodesToPrefixes.add(value to nodeAndString.second + key) // углубляемся в дерево
+                        nodesToStrings.add(value to currentPair.second + key) // углубляемся в дерево
                     }
                 }
 
@@ -122,22 +122,22 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         }
 
         // O(1)
-        override fun hasNext(): Boolean = next != null
+        override fun hasNext(): Boolean = nextString != null
 
         // O(M*N)
         override fun next(): String {
-            current = next
-            next = findNext()
-            return current ?: throw NoSuchElementException()
+            currentString = nextString
+            nextString = findNext()
+            return currentString ?: throw NoSuchElementException()
         }
 
         // O(N) , где n - длина слова
         override fun remove() {
-            val string = current
+            val stringToRemove = currentString
                 ?: throw IllegalStateException()
             // во избежание удаления одного и того же элемента
-            this@KtTrie.remove(string)
-            current = null
+            this@KtTrie.remove(stringToRemove)
+            currentString = null
         }
     }
 
