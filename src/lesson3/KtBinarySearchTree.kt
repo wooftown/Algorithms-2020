@@ -69,10 +69,13 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
 
     // добавил для удобного дебага
     override fun addAll(elements: Collection<T>): Boolean {
+        var flag = false
         for (t in elements) {
-            if (!add(t)) return false
+            if (add(t)) {
+                flag = true
+            }
         }
-        return true
+        return flag
     }
 
     /**
