@@ -148,7 +148,7 @@ abstract class AbstractTrieTest {
             println("Control set: $controlSet")
             println("Removing element \"$toRemove\" from trie set through the iterator...")
             val iterator = trieSet.iterator()
-            assertFailsWith<NoSuchElementException>("Something was supposedly deleted before the iteration started") {
+            assertFailsWith<IllegalStateException>("Something was supposedly deleted before the iteration started") {
                 iterator.remove()
             }
             var counter = trieSet.size
@@ -157,7 +157,7 @@ abstract class AbstractTrieTest {
                 counter--
                 if (element == toRemove) {
                     iterator.remove()
-                    assertFailsWith<NoSuchElementException>("Trie.remove() was successfully called twice in a row.") {
+                    assertFailsWith<IllegalStateException>("Trie.remove() was successfully called twice in a row.") {
                         iterator.remove()
                     }
                 }

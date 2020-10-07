@@ -10,7 +10,9 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
 
     private val capacity = 1 shl bits
 
-    private val storage = Array<Any?>(capacity) { null }
+
+    // Добавим к каждой переменной булеву, как предлагалось в лекции - это поможет избежать решения задачи удаления в лоб
+    private val storage = Array<Pair<Any?, Boolean>>(capacity) { null to false }
 
     override var size: Int = 0
 
@@ -25,14 +27,18 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      * Проверка, входит ли данный элемент в таблицу
      */
     override fun contains(element: T): Boolean {
-        var index = element.startingIndex()
+        val startingIndex = element.startingIndex()
+        var index = startingIndex
         var current = storage[index]
-        while (current != null) {
-            if (current == element) {
+        while (current.second) {
+            if (current.first == element) {
                 return true
             }
             index = (index + 1) % capacity
             current = storage[index]
+            if (index == startingIndex) {
+                return false
+            }
         }
         return false
     }
@@ -51,15 +57,15 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
         val startingIndex = element.startingIndex()
         var index = startingIndex
         var current = storage[index]
-        while (current != null) {
-            if (current == element) {
+        while (current.first != null) {
+            if (current.first == element) {
                 return false
             }
             index = (index + 1) % capacity
             check(index != startingIndex) { "Table is full" }
             current = storage[index]
         }
-        storage[index] = element
+        storage[index] = element to true
         size++
         return true
     }
@@ -67,7 +73,7 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
     /**
      * Удаление элемента из таблицы
      *
-     * Если элемент есть в таблица, функция удаляет его из дерева и возвращает true.
+     * Если элемент есть в таблице, функция удаляет его из дерева и возвращает true.
      * В ином случае функция оставляет множество нетронутым и возвращает false.
      * Высота дерева не должна увеличиться в результате удаления.
      *
@@ -75,8 +81,28 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      *
      * Средняя
      */
+    /*
+     Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
+     Затраты памяти - O(1)
+     */
     override fun remove(element: T): Boolean {
-        TODO("not implemented")
+        val startingIndex = element.startingIndex()
+        var index = startingIndex
+        var current = storage[index]
+        // 0(1) - в среднем , 0(N) - в худшем случае
+        while (current.second) {
+            if (element == current.first) {
+                storage[index] = null to true
+                size--
+                return true
+            }
+            index = (index + 1) % capacity
+            if (index == startingIndex) {
+                return false
+            }
+            current = storage[index]
+        }
+        return false
     }
 
     /**
@@ -89,7 +115,59 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      *
      * Средняя (сложная, если поддержан и remove тоже)
      */
-    override fun iterator(): MutableIterator<T> {
-        TODO("not implemented")
+
+
+    override fun iterator(): MutableIterator<T> = OpenAddressingSetIterator()
+
+    inner class OpenAddressingSetIterator internal constructor() : MutableIterator<T> {
+
+        // Тут так же как и в Trie, будем хранить текущий элемент и следующий
+        // Трудоёмкости конструктора и next() связаны с поиском следующего элемента,
+        // который может оказаться на startIndex - 1 $ capacity
+        private var index = -1
+        private var nextIndex = 0
+
+        /*
+         Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
+         Затраты памяти - O(1)
+         */
+        init {
+            // 0(1) - в среднем , 0(N) - в худшем случае
+            while (nextIndex < capacity && storage[nextIndex].first == null) {
+                nextIndex++
+            }
+        }
+
+        /*
+         Трудоёмкость - 0(1)
+         Затраты памяти - O(1)
+         */
+        override fun hasNext(): Boolean = nextIndex < capacity
+
+        /*
+         Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
+         Затраты памяти - O(1)
+         */
+        override fun next(): T {
+            if (nextIndex >= capacity) throw NoSuchElementException()
+            index = nextIndex
+            nextIndex++
+            @Suppress("UNCHECKED_CAST") val current = storage[index].first as T
+            // 0(1) - в среднем , 0(N) - в худшем случае
+            while (nextIndex < capacity && storage[nextIndex].first == null) {
+                nextIndex++
+            }
+            return current
+        }
+
+        /*
+           Трудоёмкость - 0(1)
+           Затраты памяти - O(1)
+        */
+        override fun remove() {
+            check(index != -1 && storage[index].first != null)
+            storage[index] = null to true
+            size--
+        }
     }
 }

@@ -69,6 +69,8 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
      *
      * Сложная
      */
+
+
     override fun iterator(): MutableIterator<String> = TrieIterator()
 
     inner class TrieIterator internal constructor() : MutableIterator<String> {
@@ -77,7 +79,6 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         // в findNext() основной лист меняется и получалось как-то не очень,
         // мы или вводим 2 переменных или в 2 функциях делаем одинаковые действия(
         // что сказывается на производительность, например в цикле forEach)
-
 
         private var current: String? = null
         private var next: String? = null
@@ -98,23 +99,25 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
             // O(M) , где М - количество элементов в линкед листе, но эта величина не постоянна в рамках данной задачи
             while (nodesToPrefixes.isNotEmpty()) {
 
-               // val nodeAndString = nodesToPrefixes.removeLastOrNull()!! // removeLast котоед выплёвывает
+                // val nodeAndString = nodesToPrefixes.removeLastOrNull()!! // removeLast котоед выплёвывает
                 val nodeAndString = nodesToPrefixes.last()
                 nodesToPrefixes.remove(nodeAndString)
+
                 //O(n) , где n - число ключей
-                for (child in nodeAndString.first.children) {
-                    if (child.key == 0.toChar()) {
-                        if (result == null) {
-                            result = nodeAndString.second // не выходим с return чтоб допрогнать всех потомков
-                        }
+                for ((key, value) in nodeAndString.first.children) {
+                    if (key == 0.toChar()) {
+                        result = nodeAndString.second // не выходим с return чтоб допрогнать всех потомков
                     } else {
-                        nodesToPrefixes.add(child.value to nodeAndString.second + child.key) // углубляемся в дерево
+                        nodesToPrefixes.add(value to nodeAndString.second + key) // углубляемся в дерево
                     }
                 }
+
                 if (result != null) {
-                    return result
+                    break
                 }
+
             }
+
             return result
         }
 
@@ -131,10 +134,12 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         // O(N) , где n - длина слова
         override fun remove() {
             val string = current
-                ?: throw NoSuchElementException()
+                ?: throw IllegalStateException()
             // во избежание удаления одного и того же элемента
             this@KtTrie.remove(string)
             current = null
         }
     }
+
+
 }
