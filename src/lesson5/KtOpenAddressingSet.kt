@@ -127,12 +127,17 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
         private var currentIndex = -1
         private var nextIndex = 0
 
-        /*
-         Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
-         Затраты памяти - O(1)
-         */
+        // 0(1) - в среднем , 0(N) - в худшем случае
         init {
-            // 0(1) - в среднем , 0(N) - в худшем случае
+
+            findNewNextIndex()
+        }
+
+        /*
+          Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
+          Затраты памяти - O(1)
+         */
+        private fun findNewNextIndex(){
             while (nextIndex < capacity && storage[nextIndex].first == null) {
                 nextIndex++
             }
@@ -154,9 +159,7 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
             nextIndex++
             @Suppress("UNCHECKED_CAST") val currentObject = storage[currentIndex].first as T
             // 0(1) - в среднем , 0(N) - в худшем случае
-            while (nextIndex < capacity && storage[nextIndex].first == null) {
-                nextIndex++
-            }
+            findNewNextIndex()
             return currentObject
         }
 
