@@ -145,10 +145,8 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
     }
 
     private fun remove(node: Node<T>): Boolean {
-
         // 0(logN) - в срденем , 0(N) - в худшем случае
         fun change(nodeToChange: Node<T>?) {
-
             // 0(logN) - в срденем , 0(N) - в худшем случае
             val parent = getParentOf(node)
             if (parent == null) {
@@ -276,10 +274,9 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
         Трудоёмкость - 0(logN) - в срденем , 0(N) - в худшем случае
         Затраты памяти - O(1)
         */
-        @Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
         override fun remove() {
             check(currentNode != null)
-            remove(currentNode)
+            remove(currentNode!!)
             currentNode = null
         }
 
