@@ -139,10 +139,12 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
         Затраты памяти - O(1)
     */
     override fun remove(element: T): Boolean {
-
         val node = find(element)
-
         if (node == null || element != node.value) return false
+        return remove(node)
+    }
+
+    private fun remove(node: Node<T>): Boolean {
 
         // 0(logN) - в срденем , 0(N) - в худшем случае
         fun change(nodeToChange: Node<T>?) {
@@ -152,7 +154,7 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
             if (parent == null) {
                 root = nodeToChange
             } else {
-                val result = parent.value.compareTo(element)
+                val result = parent.value.compareTo(node.value)
                 if (result > 0) {
                     parent.left = nodeToChange
                 } else if (result < 0) {
@@ -161,37 +163,38 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
             }
         }
 
+        val rightNode = node.right
         when {
             // O(1)
             // покрывает случай 1 и случай 2, когда есть левый потомок
             // нам без разницы есть ли левый потомок, потому что если правого нет и левого нет всё равно заменим на null
             // если нет только правого то корем станет левый потомок
-            node.right == null -> {
+            rightNode == null -> {
                 change(node.left)
             }
             // O(1)
             // покрывает случай 2 ( у нас нет левого потомка)
             // и случай 3 ( в поддереве правого потомка нету элемента меньше его корня) - 29
-            node.right!!.left == null -> {
-                node.right!!.left = node.left
-                change(node.right)
+            rightNode.left == null -> {
+                rightNode.left = node.left
+                change(rightNode)
             }
             // 3 случай - в поддереве правого потомка есть элемент меньше его корня
             else -> {
                 // 0(logN) - в срденем , 0(N) - в худшем случае
-                val minParent = parentOfMinimumInBranch(node.right!!)
+                val minParent = parentOfMinimumInBranch(rightNode)
                 val min = minParent!!.left
                 minParent.left = min!!.right
                 min.left = node.left
-                min.right = node.right
+                min.right = rightNode
                 //O(1)
                 change(min)
             }
         }
-
         size--
         return true
     }
+
 
     override fun comparator(): Comparator<in T>? =
         null
@@ -273,9 +276,10 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
         Трудоёмкость - 0(logN) - в срденем , 0(N) - в худшем случае
         Затраты памяти - O(1)
         */
+        @Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
         override fun remove() {
             check(currentNode != null)
-            this@KtBinarySearchTree.remove(currentNode!!.value)
+            remove(currentNode)
             currentNode = null
         }
 
