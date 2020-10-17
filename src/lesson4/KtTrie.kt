@@ -80,8 +80,9 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         // мы или вводим 2 переменных или в 2 функциях делаем одинаковые действия(
         // что сказывается на производительность, например в цикле forEach)
 
-        private var currentString: String? = null
-        private var nextString: String? = null
+        // upd добавил в пару значение последнего узла, чтобы при удалении не искать узлы опять
+        private var currentString: Pair<String?, Node?> = null to null
+        private var nextString: Pair<String?, Node?> = null to null
 
         private val nodesToStrings = mutableListOf<Pair<Node, String>>()
 
@@ -94,52 +95,50 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         // сложно оценить трудоёмкость данной функции из-за того что внешний цикл может иметь какое угодно число итераций
         // Трудоёмкость - O(M*n), n - длина следующего слова ???
         // Ресурсоёмкость - 0(1) ( если не считать изменение nodesToPrefixes )
-        private fun findNext(): String? {
-            var result: String? = null
+        private fun findNext(): Pair<String?, Node?> {
+            var result: Pair<String?, Node?> = null to null
             // O(M) , где М - количество элементов в линкед листе, но эта величина не постоянна в рамках данной задачи
             while (nodesToStrings.isNotEmpty()) {
-
                 // val nodeAndString = nodesToPrefixes.removeLastOrNull()!! // removeLast котоед выплёвывает
                 val currentPair = nodesToStrings.last()
                 nodesToStrings.remove(currentPair)
-
                 //O(n) , где n - число ключей
                 for ((key, value) in currentPair.first.children) {
                     if (key == 0.toChar()) {
-                        result = currentPair.second // не выходим с return чтоб допрогнать всех потомков
+                        result =
+                            currentPair.second to currentPair.first // не выходим с return чтоб допрогнать всех потомков
                     } else {
                         nodesToStrings.add(value to currentPair.second + key) // углубляемся в дерево
                     }
                 }
-
-                if (result != null) {
+                if (result.notNull()) {
                     break
                 }
-
             }
-
             return result
         }
 
         // O(1)
-        override fun hasNext(): Boolean = nextString != null
+        override fun hasNext(): Boolean = nextString.notNull()
 
         // O(M*N)
         override fun next(): String {
             currentString = nextString
             nextString = findNext()
-            return currentString ?: throw NoSuchElementException()
+            return currentString.first ?: throw NoSuchElementException()
         }
 
-        // O(N) , где n - длина слова
+        // O(1)
         override fun remove() {
-            val stringToRemove = currentString
-                ?: throw IllegalStateException()
-            // во избежание удаления одного и того же элемента
-            this@KtTrie.remove(stringToRemove)
-            currentString = null
+            check(currentString.notNull())
+            currentString.second!!.children.remove(0.toChar())
+            size--
+            currentString = null to null
         }
     }
 
 
 }
+
+
+fun <A, B> Pair<A?, B?>.notNull() = first != null && second != null
