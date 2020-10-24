@@ -11,7 +11,11 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
     private val capacity = 1 shl bits
 
 
-    // Добавим к каждой переменной булеву, как предлагалось в лекции - это поможет избежать решения задачи удаления в лоб
+    /*
+    Привяжем к каждой ячейку булеву, если данная клетка когда-либо использовалась то будет менять false -> true
+    Это позволит более удобно искать и удалять элементы
+     */
+
     private val storage = Array<Pair<Any?, Boolean>>(capacity) { null to false }
 
     override var size: Int = 0
@@ -82,7 +86,10 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      * Средняя
      */
     /*
-     Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
+     Трудоёмкость
+      0(1) - в среднем
+      0(N) - в худшем случае, когда вся таблица была заполнена и индекс нужного элемента идёт перед startIndex, здесь
+      N = размер таблицы
      Затраты памяти - O(1)
      */
     override fun remove(element: T): Boolean {
@@ -121,23 +128,25 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
 
     inner class OpenAddressingSetIterator internal constructor() : MutableIterator<T> {
 
-        // Тут так же как и в Trie, будем хранить текущий элемент и следующий
-        // Трудоёмкости конструктора и next() связаны с поиском следующего элемента,
-        // который может оказаться на startIndex - 1 $ capacity
+        /*
+        Для того чтобы для проверки hasNext() не идти по таблице в поиске следующего элемента введём функцию findNewNextIndex()
+        Таким образом получается: мы имеем индекс current объекта - для next(),remove() и индекс next объекта для hasNext()
+         */
+
         private var currentIndex = -1
         private var nextIndex = 0
 
-        // 0(1) - в среднем , 0(N) - в худшем случае
+        // 0(1) - в среднем , 0(N) - в худшем случае (см. функцию findNewNextIndex())
         init {
-
             findNewNextIndex()
         }
 
         /*
           Трудоёмкость - 0(1) - в среднем , 0(N) - в худшем случае, где N - размер таблицы
+          Худший случай в данной функции - если в таблице 1 элемент и он находится в последней ячейке
           Затраты памяти - O(1)
          */
-        private fun findNewNextIndex(){
+        private fun findNewNextIndex() {
             while (nextIndex < capacity && storage[nextIndex].first == null) {
                 nextIndex++
             }
@@ -157,7 +166,8 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
             if (nextIndex >= capacity) throw NoSuchElementException()
             currentIndex = nextIndex
             nextIndex++
-            @Suppress("UNCHECKED_CAST") val currentObject = storage[currentIndex].first as T
+            @Suppress("UNCHECKED_CAST")
+            val currentObject = storage[currentIndex].first as T
             // 0(1) - в среднем , 0(N) - в худшем случае
             findNewNextIndex()
             return currentObject
