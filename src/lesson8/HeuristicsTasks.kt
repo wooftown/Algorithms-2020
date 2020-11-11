@@ -100,7 +100,14 @@ class Ant(
 
         // зацикливаем
         visitedVertices.add(current)
-        visitedEdges.add(graph.getConnection(graph.vertices.first(), current)!!)
+        val connection = graph.getConnection(graph.vertices.first(), current)
+
+        // На довольно лёгком графе в тестах проблемы не было, когда сделал свой понял что эту часть надо укрепить
+        if (connection == null) {
+            prepareForNextProcess() // чтобы сломанные данные не мешали
+            return
+        }
+        visitedEdges.add(connection)
 
         // если всё ок, то вытаскиваем путь
         var result = Path(visitedVertices.first())
@@ -183,17 +190,18 @@ class Ant(
    Затраты памяти: O(кол-во мураёв * N )
     */
 fun Graph.findVoyagingPathHeuristics(
-    antNumber: Int,
-    chance: Int,
     vararg options: Array<Any>,
 ): Path {
-
+    val size = this.vertices.size
+    // не стал вносить их в параметры чтобы "пользователь" особо не парился +- получая хороший ответ
+    val chance = size * 3 // можно играться с коэфами
+    // вроде выбранные мною коэфы работают неплохо
     // Создадим тут карту феромонов, чтобы передать ссылку всем муравьям
     // а то получилось бы что у каждого своя мапа
     val pheromones = mutableMapOf<Graph.Edge, Double>()
     //O(M)
     val antsList =
-        Array(antNumber) { Ant(this, pheromonesMap = pheromones) }
+        Array(size * 10) { Ant(this, pheromonesMap = pheromones) }
 
     var path: Path? = null
     // Чтобы не было *магического* числа итераций сделан
@@ -211,6 +219,7 @@ fun Graph.findVoyagingPathHeuristics(
         // O(L)
         antsList.forEach { ant ->
             // O(N)
+            //  println(iterationRemaining)
             ant.process()
         }
         // newPath - O(L*N)
