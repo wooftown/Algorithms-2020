@@ -64,6 +64,8 @@ class Ant(
     private val visitedVertices: MutableList<Graph.Vertex> = mutableListOf()
     private val visitedEdges: MutableSet<Graph.Edge> = mutableSetOf()
 
+    var path: Path? = null // если маршрут пройден то тут он будет лежать
+
     // Подготовка с следующей итерации
     // Нужно обновить количество феромонов и сбросить данные
     /*
@@ -103,22 +105,16 @@ class Ant(
         // зацикливаем
         visitedVertices.add(current)
         visitedEdges.add(graph.getConnection(graph.vertices.first(), current)!!)
-    }
 
-
-    // Переводим наши visitedVertices в Path
-    fun getPath(): Path? {
-
-        if (visitedEdges.size <= 1) {
-            return null
-        }
-
+        // если всё ок, то вытаскиваем путь
         var result = Path(visitedVertices.first())
         // O(N)
         visitedVertices.drop(1).forEach {
             result = Path(result, graph, it)
         }
-        return Path(result, graph, visitedVertices.first())
+
+        path = Path(result, graph, visitedVertices.first())
+
     }
 
 
@@ -226,7 +222,7 @@ fun Graph.findVoyagingPathHeuristics(
             // O(L)
             .mapNotNull { // добавил здесь NotNull чтобы не вызывать not-null!! ниже
                 // O(N)
-                it.getPath()
+                it.path
             }
             // O(L)
             .minByOrNull { it.length }
