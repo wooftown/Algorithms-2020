@@ -6,6 +6,7 @@ import lesson6.impl.GraphBuilder
 import lesson7.knapsack.Fill
 import lesson7.knapsack.Item
 import lesson7.knapsack.fillKnapsackGreedy
+import lesson8.genetic.findVoyagingPathGenetically
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -48,7 +49,9 @@ abstract class AbstractHeuristicsTests {
             addConnection(a, f, 40)
             addConnection(b, d, 10)
             addConnection(c, e, 5)
+
         }.build()
+
         val path = graph.findVoyagingPathHeuristics()
         assertEquals(105, path.length)
         val vertices = path.vertices

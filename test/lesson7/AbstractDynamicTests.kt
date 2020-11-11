@@ -55,9 +55,20 @@ abstract class AbstractDynamicTests {
                 )
             )
         )
+
+        assertEquals(
+            listOf(0, 1, 2, 3), lesson7.longestIncreasingSubSequence(
+                listOf(
+                    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 0, 0, 0, 1, 1, 0, 1,
+                    1, 0, 1, 0, 3
+                )
+            )
+        )
+
     }
 
     fun shortestPathOnField(shortestPathOnField: (String) -> Int) {
+        // Я считаю задача довольно простая и поэтому тесты будут излишними
         assertEquals(1, shortestPathOnField("input/field_in2.txt"))
         assertEquals(12, shortestPathOnField("input/field_in1.txt"))
         assertEquals(43, shortestPathOnField("input/field_in3.txt"))
