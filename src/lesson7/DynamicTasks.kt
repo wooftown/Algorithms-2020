@@ -60,7 +60,7 @@ fun longestIncreasingSubSequence(list: List<Int>): List<Int> {
     }
 
     // O(N)
-    val len = lengthList.max() // null не боимся, любая последовательность будет иметь LIS
+    val len = lengthList.maxOrNull() // null не боимся, любая последовательность будет иметь LIS
     // O(N)
     var pos = lengthList.indexOf(len)
 

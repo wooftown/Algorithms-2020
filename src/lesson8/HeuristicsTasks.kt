@@ -154,7 +154,7 @@ class Ant(
             // O(M/N)
             .filter { it !in visitedVertices }
             // O(M/N)
-            .maxBy {
+            .maxByOrNull {
                 evaluatePheromones(it)
             }
 
@@ -225,7 +225,7 @@ fun Graph.findVoyagingPathHeuristics(
                 it.path
             }
             // O(L)
-            .minBy { it.length }
+            .minByOrNull { it.length }
 
         if (newPath != null && (path == null || newPath.length < path.length)) {
             path = newPath
