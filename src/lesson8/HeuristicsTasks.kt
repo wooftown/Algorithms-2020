@@ -86,22 +86,18 @@ class Ant(
          */
     // итерация муравья, обходит все вершины графа если ему это удаётся , если нет то сбрасываем его
     fun process() {
-        var flag = false
         // O(N)
         while (visitedVertices.size != graph.vertices.size - 1) {
             val next = next()
             if (next == null) {
-                flag = true
-                break
+                prepareForNextProcess() // чтобы сломанные данные не мешали
+                return
             }
             visitedEdges.add(graph.getConnection(current, next)!!)
             visitedVertices.add(current)
             current = next
         }
-        if (flag) {
-            prepareForNextProcess()
-            return
-        }
+
         // зацикливаем
         visitedVertices.add(current)
         visitedEdges.add(graph.getConnection(graph.vertices.first(), current)!!)
